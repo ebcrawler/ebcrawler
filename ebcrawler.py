@@ -15,7 +15,7 @@ def page_transactions(page):
             basepoints = int(j['availablePointsAfterTransaction'])
         if pt in ['Basic Points', 'Extra Points']:
             usepoints = int(j['availablePointsAfterTransaction'])
-        if pt in ['Points Used', 'Points Expired']:
+        if pt in ['Points Used', 'Points Expired', 'Points Returned']:
             usepoints = -int(j['availablePointsAfterTransaction'])
         yield (datetime.strptime(j['datePerformed'], '%Y-%m-%dT%H:%M:%S.%fZ').date(),
                pt,
