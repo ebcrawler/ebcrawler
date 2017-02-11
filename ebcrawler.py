@@ -85,7 +85,7 @@ if __name__ == "__main__":
             transactions.extend(list(page_transactions(p)))
 
     if args.csv:
-        with open(args.csv, "w") as f:
+        with open(args.csv, "w", encoding='utf8') as f:
             c = csv.writer(f)
             c.writerow(['Date', 'Pointtype', 'Description', 'Base points', 'Points'])
             for r in transactions:
