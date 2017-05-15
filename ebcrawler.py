@@ -10,15 +10,25 @@ from datetime import datetime
 def page_transactions(page):
     for j in page['transactionHistory']['transaction']:
         basepoints = usepoints = 0
-        pt = j['basicPointsAfterTransaction']
-        if pt in ['Basic Points', 'Swedish Domestic']:
+        pt = j['basicPointsAfterTransaction'].lower()
+        if pt in ['basic points', 'swedish domestic']:
             basepoints = int(j['availablePointsAfterTransaction'])
-        if pt in ['Basic Points', 'Extra Points', 'Points Returned']:
+            if j['typeOfTransaction'] == 'Flightactivity':
+                # Flights give both basic and usable points
+                usepoints = int(j['availablePointsAfterTransaction'])
+            elif j['typeOfTransaction'] == 'Transactioncorrection':
+                # E.g. Amex points
+                pass
+            else:
+                print("Unknown type for base points: %s" % j['typeOfTransaction'])
+        elif pt in ['extra points', 'points returned']:
             usepoints = int(j['availablePointsAfterTransaction'])
-        if pt in ['Points Used', 'Points Expired']:
+        elif pt in ['points used', 'points expired']:
             usepoints = -int(j['availablePointsAfterTransaction'])
+        else:
+            print("Unknown transaction: %s" % j)
         yield (datetime.strptime(j['datePerformed'], '%Y-%m-%dT%H:%M:%S.%fZ').date(),
-               pt,
+               j['basicPointsAfterTransaction'],
                j.get('description', ''),
                basepoints,
                usepoints,
