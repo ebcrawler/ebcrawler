@@ -7,8 +7,10 @@ import getpass
 import csv
 from datetime import datetime
 
-def page_transactions(page):
+def page_transactions(page, debug):
     for j in page['transactionHistory']['transaction']:
+        if debug:
+            print(j)
         basepoints = usepoints = 0
         pt = j['basicPointsAfterTransaction'].lower()
         if pt in ['basic points', 'swedish domestic']:
@@ -54,6 +56,7 @@ if __name__ == "__main__":
     parser.add_argument('--all', action='store_true', help='Crawl all transactions')
     parser.add_argument('--pages', type=int, help='Number of pages to crawl')
     parser.add_argument('--csv', type=str, help='Write to file in CSV format')
+    parser.add_argument('--debug', action='store_true', help='Enable debugging')
 
     args = parser.parse_args()
 
@@ -82,7 +85,7 @@ if __name__ == "__main__":
     print("Total points:   {0}".format(int(page['totalPointsForUse'])))
     totalpages = int(page['transactionHistory']['totalNumberOfPages'])
 
-    transactions = list(page_transactions(page))
+    transactions = list(page_transactions(page, args.debug))
     highpage = 1
     if args.pages:
         highpage = min(args.pages, totalpages)
@@ -92,7 +95,7 @@ if __name__ == "__main__":
     if highpage > 1:
         for i in range(2, highpage+1):
             p = fetch_page(i, tokenjson)
-            transactions.extend(list(page_transactions(p)))
+            transactions.extend(list(page_transactions(p, args.debug)))
 
     if args.csv:
         with open(args.csv, "w", encoding='utf8') as f:
