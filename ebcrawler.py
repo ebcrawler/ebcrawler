@@ -11,8 +11,10 @@ def page_transactions(page, debug):
     for j in page['transactionHistory']['transaction']:
         if debug:
             print(j)
+        d = datetime.strptime(j['datePerformed'], '%Y-%m-%dT%H:%M:%S.%fZ').date()
         basepoints = usepoints = 0
-        pt = j['basicPointsAfterTransaction'].lower()
+        ptfull = j['basicPointsAfterTransaction']
+        pt = ptfull.lower()
         if pt in ['basic points', 'swedish domestic']:
             basepoints = int(j['availablePointsAfterTransaction'])
             if j['typeOfTransaction'] == 'Flightactivity':
@@ -21,6 +23,13 @@ def page_transactions(page, debug):
             elif j['typeOfTransaction'] == 'Transactioncorrection':
                 # E.g. Amex points
                 pass
+            elif j['typeOfTransaction'] == 'Otheractivity' and j.get('description', '').startswith('MasterCard Reward SwedenPoints Earned'):
+                # MasterCard transactions sometimes post as base points
+                # instead of extra points.
+                print("Corrected broken mastercard transaction on {0}".format(d))
+                usepoints = basepoints
+                basepoints = 0
+                ptfull = 'Extra Points'
             else:
                 print("Unknown type for base points: %s" % j['typeOfTransaction'])
         elif pt in ['extra points', 'points returned']:
@@ -29,8 +38,8 @@ def page_transactions(page, debug):
             usepoints = -int(j['availablePointsAfterTransaction'])
         else:
             print("Unknown transaction: %s" % j)
-        yield (datetime.strptime(j['datePerformed'], '%Y-%m-%dT%H:%M:%S.%fZ').date(),
-               j['basicPointsAfterTransaction'],
+        yield (d,
+               ptfull,
                j.get('description', ''),
                basepoints,
                usepoints,
