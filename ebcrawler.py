@@ -17,13 +17,13 @@ def page_transactions(page, debug):
         pt = ptfull.lower()
         if pt in ['basic points', 'swedish domestic']:
             basepoints = int(j['availablePointsAfterTransaction'])
-            if j['typeOfTransaction'] == 'Flightactivity':
+            if j['typeOfTransaction'] in ('Flightactivity', 'Flight Activity'):
                 # Flights give both basic and usable points
                 usepoints = int(j['availablePointsAfterTransaction'])
             elif j['typeOfTransaction'] == 'Transactioncorrection':
                 # E.g. Amex points
                 pass
-            elif j['typeOfTransaction'] == 'Otheractivity' and j.get('description', '').startswith('MasterCard Reward SwedenPoints Earned'):
+            elif j['typeOfTransaction'] in ('Otheractivity', 'Other activity') and j.get('description', '').startswith('MasterCard Reward SwedenPoints Earned'):
                 # MasterCard transactions sometimes post as base points
                 # instead of extra points.
                 print("Corrected broken mastercard transaction on {0}".format(d))
