@@ -48,8 +48,14 @@ def page_transactions(page, debug):
 
 def fetch_page(pageno, tokenjson):
     print("Fetching page {0}".format(pageno))
-    r = requests.get('https://api.flysas.com/customer/euroBonus/getAccountInfo?pageNumber={0}&customerSessionId={1}'.format(pageno, tokenjson['customerSessionId']),
-                    headers={'Authorization': tokenjson['access_token'], 'Referrer': 'www.sas.se', 'Origin': 'www.sas.se'},
+    token = tokenjson['access_token']
+    sessionid = tokenjson['customerSessionId']
+    r = requests.get('https://api.flysas.com/customer/euroBonus/getAccountInfo?pageNumber={0}&customerSessionId={1}'.format(pageno, sessionid),
+                    headers={'Authorization': token,
+                             'Referer': 'https://www.sas.se/',
+                             'Origin': 'https://www.sas.se',
+                             'Accept': 'application/json, text/plain, */*',
+                    },
                     )
     if r.status_code != 200:
         print("Failed to get page {0}:".format(pageno))
@@ -81,7 +87,12 @@ if __name__ == "__main__":
     print("Logging in...")
     r = requests.post('https://api.flysas.com/authorize/oauth/token',
                       data={'grant_type': 'password', 'username': args.ebnumber, 'password': password},
-                      headers={'Referrer': 'www.sas.se', 'Origin': 'www.sas.se', 'Authorization': 'Basic U0FTLVVJOg=='},
+                      headers={'Referer': 'https://www.sas.se/',
+                               'Origin': 'https://www.sas.se',
+                               'Authorization': 'Basic U0FTLVVJOg==',
+                               'Content-type': 'application/x-www-form-urlencoded; charset=UTF-8',
+                               'accept': 'application/json, text/plain, */*'
+                      },
                       )
     if r.status_code != 200:
         print("Failed to log in:")
