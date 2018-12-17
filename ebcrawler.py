@@ -21,7 +21,7 @@ def page_transactions(page, debug):
             usepoints = 0
         elif pt in ['basic points', 'swedish domestic']:
             basepoints = int(j['availablePointsAfterTransaction'])
-            if j['typeOfTransaction'] in ('Flightactivity', 'Flight Activity'):
+            if j['typeOfTransaction'] in ('Flightactivity', 'Flight Activity', 'Special Activity'):
                 # Flights give both basic and usable points
                 usepoints = int(j['availablePointsAfterTransaction'])
             elif j['typeOfTransaction'] == 'Transactioncorrection':
