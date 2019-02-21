@@ -7,6 +7,11 @@ import getpass
 import csv
 from datetime import datetime
 
+def getdescription(j):
+    if j.get('decription', None):
+        return j['description']
+    return "{0} {1}".format(j.get('description1', ''), j.get('description2', ''))
+
 def page_transactions(page, debug):
     for j in page['transactionHistory']['transaction']:
         if debug:
@@ -37,7 +42,7 @@ def page_transactions(page, debug):
             print("Unknown transaction: %s" % j)
         yield (d,
                ptfull,
-               j.get('description', ''),
+               getdescription(j),
                basepoints,
                usepoints,
                )
