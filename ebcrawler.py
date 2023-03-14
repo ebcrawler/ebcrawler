@@ -20,7 +20,7 @@ def page_transactions(page, debug):
         basepoints = usepoints = 0
         ptfull = j['basicPointsAfterTransaction']
         pt = ptfull.lower()
-        if pt in ['status points']:
+        if pt in ['status points', 'mastercard status points']:
             # Status points only, e.g. mastercard
             basepoints = int(j['availablePointsAfterTransaction'])
             usepoints = 0
