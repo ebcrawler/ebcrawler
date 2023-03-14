@@ -6,6 +6,8 @@ import argparse
 import getpass
 import csv
 from datetime import datetime
+import time
+import simplejson
 
 def getdescription(j):
     if j.get('decription', None):
@@ -52,13 +54,26 @@ def fetch_page(pageno, tokenjson):
     print("Fetching page {0}".format(pageno))
     token = tokenjson['access_token']
     sessionid = tokenjson['customerSessionId']
-    r = requests.get('https://api.flysas.com/customer/euroBonus/getAccountInfo?pageNumber={0}&customerSessionId={1}'.format(pageno, sessionid),
-                    headers={'Authorization': token,
-                             'Referer': 'https://www.sas.se/',
-                             'Origin': 'https://www.sas.se',
-                             'Accept': 'application/json, text/plain, */*',
-                    },
-                    )
+    for i in range(0,3):
+        r = requests.get('https://api.flysas.com/customer/euroBonus/getAccountInfo?pageNumber={0}&customerSessionId={1}'.format(pageno, sessionid),
+                         headers={'Authorization': token,
+                                  'Referer': 'https://www.sas.se/',
+                                  'Origin': 'https://www.sas.se',
+                                  'Accept': 'application/json, text/plain, */*',
+                         },
+        )
+        if r.status_code == 200:
+            break
+        try:
+            if r.json()['errorInfo'][0]['errorCode'] == '1005003':
+                # "We cannot process your request right now, please try again later"
+                print("Failed to get page {0}, sleeping to try again".format(pageno))
+                time.sleep(5)
+                print("Fetching page {}, attempt {}".format(pageno, i+1))
+                continue
+        except Exception:
+            break
+
     if r.status_code != 200:
         print("Failed to get page {0}:".format(pageno))
         print(r.text)
@@ -93,14 +108,27 @@ if __name__ == "__main__":
                                'Origin': 'https://www.sas.se',
                                'Authorization': 'Basic U0FTLVVJOg==',
                                'Content-type': 'application/x-www-form-urlencoded; charset=UTF-8',
-                               'accept': 'application/json, text/plain, */*'
+                               'accept': 'application/json, text/plain, */*',
+                               'accept-encoding': 'gzip, deflate',
+                               'accept-language': 'en-US,en;q=0.9',
+                               'Cache-control': 'no-cache',
+                               'Pragma': 'no-cache',
+                               'User-agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36',
                       },
                       )
     if r.status_code != 200:
         print("Failed to log in:")
+        sys.exit(1)
+    try:
+        tokenjson = r.json()
+    except simplejson.errors.JSONDecodeError:
+        print("Invalid json received:")
         print(r.text)
         sys.exit(1)
-    tokenjson = r.json()
+    print("Login complete")
+
+    # Put in a sleep since the site appears to be slower now...
+    time.sleep(2)
 
     page = fetch_page(1, tokenjson)
     print("Base points:    {0}".format(int(page['pointsAvailable'])))
